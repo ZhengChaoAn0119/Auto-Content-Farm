@@ -1,0 +1,12 @@
+services:
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    volumes:
+      # Mount GCP Application Default Credentials for local dev
+      - ${GOOGLE_APPLICATION_CREDENTIALS:-~/.config/gcloud/application_default_credentials.json}:/gcp/creds.json:ro
+    environment:
+      GOOGLE_APPLICATION_CREDENTIALS: /gcp/creds.json
