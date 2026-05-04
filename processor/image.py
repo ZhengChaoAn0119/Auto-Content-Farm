@@ -1,29 +1,25 @@
 import logging
-import requests
-from openai import OpenAI
+from google import genai
+from google.genai import types
 
 logger = logging.getLogger(__name__)
 
-# Closest native DALL-E 3 size to 9:16
-IMAGE_SIZE = "1024x1792"
-
 
 def generate(image_prompt: str, api_key: str) -> bytes:
-    """Generate a 9:16 image via DALL-E 3 and return raw PNG bytes."""
-    client = OpenAI(api_key=api_key)
+    """Generate a 9:16 image via Imagen 3 and return raw PNG bytes."""
+    client = genai.Client(api_key=api_key)
 
-    logger.info("Generating DALL-E 3 image: %s", image_prompt[:80])
-    response = client.images.generate(
-        model="dall-e-3",
+    logger.info("Generating Imagen 3 image: %s", image_prompt[:80])
+    response = client.models.generate_images(
+        model="imagen-3.0-generate-001",
         prompt=image_prompt,
-        size=IMAGE_SIZE,
-        quality="standard",
-        n=1,
+        config=types.GenerateImagesConfig(
+            aspect_ratio="9:16",
+            number_of_images=1,
+            safety_filter_level="BLOCK_ONLY_HIGH",
+            person_generation="ALLOW_ADULT",
+        ),
     )
-
-    image_url = response.data[0].url
-    logger.info("Image generated, downloading from URL")
-
-    img_response = requests.get(image_url, timeout=30)
-    img_response.raise_for_status()
-    return img_response.content
+    if not response.generated_images:
+        raise RuntimeError(f"Imagen 3 returned no images (safety filter or quota). Prompt: {image_prompt[:120]}")
+    return response.generated_images[0].image.image_bytes

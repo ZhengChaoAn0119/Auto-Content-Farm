@@ -1,6 +1,6 @@
 import logging
 import re
-import requests
+from curl_cffi import requests
 from bs4 import BeautifulSoup
 
 logger = logging.getLogger(__name__)
@@ -23,7 +23,7 @@ def _parse_push_count(raw: str) -> int:
 
 
 def _fetch_page(url: str) -> BeautifulSoup:
-    resp = requests.get(url, cookies=SESSION_COOKIES, timeout=10)
+    resp = requests.get(url, cookies=SESSION_COOKIES, impersonate="chrome120", timeout=10)
     resp.raise_for_status()
     return BeautifulSoup(resp.text, "html.parser")
 

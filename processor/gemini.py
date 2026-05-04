@@ -52,6 +52,33 @@ def analyze_sentiment(summary: str, api_key: str, model: str) -> dict:
         return {"sentiment": "中立", "confidence": 50, "reason": "無法解析"}
 
 
+def summarize_and_analyze(post: dict, api_key: str, model: str) -> tuple[str, dict]:
+    """Summarize a post and analyze sentiment in one Gemini call to halve quota usage."""
+    client = _init_client(api_key, model)
+    prompt = f"""請將以下PTT股票版文章：
+1. 摘要成3到5個重點（繁體中文條列式）
+2. 判斷市場情緒
+
+以JSON格式回覆（只輸出JSON，不要其他文字）：
+{{
+  "summary": "• 重點1\\n• 重點2\\n...",
+  "sentiment": {{"sentiment": "看多|看空|中立", "confidence": 0-100的整數, "reason": "一句話判斷依據（繁體中文）"}}
+}}
+
+標題：{post['title']}
+內容：
+{post['content'][:3000]}
+"""
+    response = client.generate_content(prompt)
+    text = re.sub(r"^```json\s*|^```\s*|\s*```$", "", response.text.strip(), flags=re.MULTILINE).strip()
+    try:
+        data = json.loads(text)
+        return data["summary"], data["sentiment"]
+    except (json.JSONDecodeError, KeyError):
+        logger.warning("Failed to parse combined response: %s", text[:200])
+        return text, {"sentiment": "中立", "confidence": 50, "reason": "無法解析"}
+
+
 def generate_post_text(summaries: list[str], sentiments: list[dict], api_key: str, model: str) -> str:
     """Generate a YouTube Community Post in Traditional Chinese based on today's PTT stock summaries."""
     client = _init_client(api_key, model)
