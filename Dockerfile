@@ -9,9 +9,6 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Install Playwright's Chromium browser + system dependencies
-RUN playwright install chromium --with-deps
-
 COPY . .
 
 ENV PORT=8080

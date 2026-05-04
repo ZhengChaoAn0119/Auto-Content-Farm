@@ -16,13 +16,6 @@ class Config:
     gemini_api_key: str = field(default_factory=lambda: os.environ["GEMINI_API_KEY"])
     gemini_model: str = field(default_factory=lambda: os.getenv("GEMINI_MODEL", "gemini-2.0-flash"))
 
-    # OpenAI
-    openai_api_key: str = field(default_factory=lambda: os.getenv("OPENAI_API_KEY", ""))
-
-    # YouTube
-    yt_email: str = field(default_factory=lambda: os.environ["YT_EMAIL"])
-    yt_password: str = field(default_factory=lambda: os.environ["YT_PASSWORD"])
-
     # GCS
     gcs_bucket: str = field(default_factory=lambda: os.environ["GCS_BUCKET"])
 
