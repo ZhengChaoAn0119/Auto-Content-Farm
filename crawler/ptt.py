@@ -22,10 +22,20 @@ def _parse_push_count(raw: str) -> int:
         return 0
 
 
+_IMPERSONATE_TARGETS = ["chrome124", "safari17_0", "chrome116", "chrome120"]
+
+
 def _fetch_page(url: str) -> BeautifulSoup:
-    resp = requests.get(url, cookies=SESSION_COOKIES, impersonate="chrome120", timeout=10)
-    resp.raise_for_status()
-    return BeautifulSoup(resp.text, "html.parser")
+    last_err: Exception | None = None
+    for target in _IMPERSONATE_TARGETS:
+        try:
+            resp = requests.get(url, cookies=SESSION_COOKIES, impersonate=target, timeout=15)
+            resp.raise_for_status()
+            return BeautifulSoup(resp.text, "html.parser")
+        except Exception as e:
+            logger.debug("Impersonate target %s failed for %s: %s", target, url, e)
+            last_err = e
+    raise last_err
 
 
 def _fetch_post_content(url: str) -> str:
@@ -54,7 +64,11 @@ def fetch_popular_posts(board: str, threshold: int, max_posts: int) -> list[dict
 
     while len(collected) < max_posts and index_url:
         logger.info("Fetching PTT index: %s", index_url)
-        soup = _fetch_page(index_url)
+        try:
+            soup = _fetch_page(index_url)
+        except Exception as e:
+            logger.error("Failed to fetch PTT index page %s: %s", index_url, e)
+            break
 
         entries = soup.select("div.r-ent")
         for entry in reversed(entries):

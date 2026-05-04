@@ -5,9 +5,9 @@ from google.genai import types
 logger = logging.getLogger(__name__)
 
 
-def generate(image_prompt: str, api_key: str) -> bytes:
-    """Generate a 9:16 image via Imagen 3 and return raw PNG bytes."""
-    client = genai.Client(api_key=api_key)
+def generate(image_prompt: str, gcp_project: str) -> bytes:
+    """Generate a 9:16 image via Imagen 3 on Vertex AI and return raw PNG bytes."""
+    client = genai.Client(vertexai=True, project=gcp_project, location="us-central1")
 
     logger.info("Generating Imagen 3 image: %s", image_prompt[:80])
     response = client.models.generate_images(

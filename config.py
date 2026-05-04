@@ -26,6 +26,9 @@ class Config:
     # GCS
     gcs_bucket: str = field(default_factory=lambda: os.environ["GCS_BUCKET"])
 
+    # GCP
+    gcp_project: str = field(default_factory=lambda: os.environ["GCP_PROJECT"])
+
 
 def get_config() -> Config:
     return Config()

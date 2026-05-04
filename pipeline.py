@@ -52,7 +52,7 @@ def run(cfg: Config, posts: list[dict] | None = None) -> dict:
 
     # 5. Imagen 3: generate 9:16 image
     logger.info("Step 5/6: Generating 9:16 image via Imagen 3")
-    image_bytes = image.generate(image_prompt, cfg.gemini_api_key)
+    image_bytes = image.generate(image_prompt, cfg.gcp_project)
     blob_path = gcs.upload_image(cfg.gcs_bucket, image_bytes)
 
     # 6. Playwright: post to YouTube Community
